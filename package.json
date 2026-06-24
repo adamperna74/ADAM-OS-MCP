@@ -1,0 +1,20 @@
+{
+  "name": "adam-os-mcp",
+  "version": "1.0.0",
+  "description": "Adam OS — Executive Assistant MCP Server for Stoic Holdings",
+  "type": "module",
+  "bin": {
+    "adam-mcp": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "better-sqlite3": "^9.4.3",
+    "csv-parse": "^5.5.6",
+    "googleapis": "^140.0.0",
+    "node-fetch": "^3.3.2"
+  }
+}
