@@ -24,7 +24,7 @@ export const tools = [
     },
     handler: ({ business = 'both', days = 14 }) => {
       const where = business.toLowerCase() === 'both' ? '' : `AND business_name LIKE '%${business}%'`
-      const rows = db.prepare(`
+      const rows = db.all(`
         SELECT business_name, position,
                SUM(regular_hours) as reg_hours,
                SUM(overtime_hours) as ot_hours,
@@ -72,7 +72,7 @@ export const tools = [
       }
     },
     handler: ({ employee_name = '', days = 14 }) => {
-      const rows = db.prepare(`
+      const rows = db.all(`
         SELECT employee_name, business_name, position,
                SUM(regular_hours) as reg_hours,
                SUM(overtime_hours) as ot_hours,
@@ -102,7 +102,7 @@ export const tools = [
     },
     handler: ({ business = 'both', days = 30 }) => {
       const where = business.toLowerCase() === 'both' ? '' : `AND business_name LIKE '%${business}%'`
-      const rows = db.prepare(`
+      const rows = db.all(`
         SELECT business_name,
                SUM(net_sales) as total_sales,
                SUM(covers) as total_covers,
@@ -139,7 +139,7 @@ export const tools = [
     },
     handler: ({ business = 'both', days = 14 }) => {
       const where = business.toLowerCase() === 'both' ? '' : `AND business_name LIKE '%${business}%'`
-      const rows = db.prepare(`
+      const rows = db.all(`
         SELECT employee_name, business_name,
                SUM(net_sales) as net_sales,
                SUM(covers) as covers,
@@ -204,14 +204,14 @@ export const tools = [
       }
 
       // Store in database
-      const insertImport = db.prepare(`
+      const insertImport = db.all(`
         INSERT INTO imports (id, business_name, format, filename, row_count, date_range_start, date_range_end)
         VALUES (?, ?, ?, ?, ?, ?, ?)
       `)
       insertImport.run(result.importId, business_name, result.format, filePath.split('/').pop(), result.rows, result.date_range_start, result.date_range_end)
 
       if (result.format === 'labor') {
-        const insert = db.prepare(`
+        const insert = db.all(`
           INSERT OR REPLACE INTO labor_entries (id, import_id, business_name, employee_name, employee_id, position, work_date, regular_hours, overtime_hours, hourly_rate, total_pay)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
@@ -222,7 +222,7 @@ export const tools = [
       }
 
       if (result.format === 'sales') {
-        const insert = db.prepare(`
+        const insert = db.all(`
           INSERT OR REPLACE INTO sales_entries (id, import_id, business_name, sale_date, net_sales, gross_sales, covers, average_check, tips, tax_amount, cash_amount, credit_card_amount)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
@@ -233,7 +233,7 @@ export const tools = [
       }
 
       if (result.format === 'server_sales') {
-        const insert = db.prepare(`
+        const insert = db.all(`
           INSERT OR REPLACE INTO server_sales (id, import_id, business_name, employee_name, net_sales, covers, average_check, cc_tips, cash_tips)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
@@ -420,7 +420,7 @@ export const tools = [
       }
     },
     handler: ({ business = 'both', date_range = 'last 14 days' }) => {
-      const servers = db.prepare(`
+      const servers = db.all(`
         SELECT employee_name, SUM(net_sales) as sales, SUM(covers) as covers, SUM(cc_tips) as cc_tips, SUM(cash_tips) as cash_tips
         FROM server_sales
         ${business.toLowerCase() !== 'both' ? `WHERE business_name LIKE '%${business}%'` : ''}
@@ -466,7 +466,7 @@ export const tools = [
       const tables = ['labor_entries', 'sales_entries', 'server_sales', 'tasks', 'notes', 'imports']
       const counts = {}
       for (const t of tables) {
-        counts[t] = db.prepare(`SELECT COUNT(*) as n FROM ${t}`).get().n
+        counts[t] = db.all(`SELECT COUNT(*) as n FROM ${t}`).get().n
       }
 
       const googleTokens = db.prepare('SELECT * FROM google_tokens WHERE id = "default"').get()
